@@ -1,0 +1,35 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Simulate Kubernetes Deployment
+        run: |
+          echo "Connecting to Kubernetes Cluster..."
+          # In a real scenario, you would use steps like:
+          # - uses: azure/k8s-set-context@v1 ...
+          # - kubectl set image deployment/quiz-app quiz-app=${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:${{ github.sha }}
+          
+          echo "Deploying application to k8s namespace 'production'..."
+          echo "Image: ${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:latest"
+          sleep 5
+          echo "Deployment successful!"
+
+      - name: Dummy DAST Scan
+        run: |
+            echo "Running DAST scan against staging URL..."
+            # Example: OWASP ZAP or similar
+            sleep 5
+            echo "DAST Scan passed."
