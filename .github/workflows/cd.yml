@@ -9,27 +9,40 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Simulate Kubernetes Deployment
+      - name: Update Kubernetes Deployment Image
         run: |
-          echo "Connecting to Kubernetes Cluster..."
-          # In a real scenario, you would use steps like:
-          # - uses: azure/k8s-set-context@v1 ...
-          # - kubectl set image deployment/quiz-app quiz-app=${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:${{ github.sha }}
-          
-          echo "Deploying application to k8s namespace 'production'..."
-          echo "Image: ${{ secrets.DOCKERHUB_USERNAME }}/quiz-app:latest"
-          sleep 5
-          echo "Deployment successful!"
+          # Replace placeholder with actual DockerHub username in deployment.yaml
+          sed -i 's|DOCKERHUB_USERNAME|${{ secrets.DOCKERHUB_USERNAME }}|g' k8s/deployment.yaml
+          # Update the image tag to the latest commit SHA
+          sed -i 's|quiz-app:latest|quiz-app:${{ github.sha }}|g' k8s/deployment.yaml
+          cat k8s/deployment.yaml
+
+      - name: Deploy to Kubernetes
+        run: |
+          echo "Deploying to Kubernetes cluster..."
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          echo "Waiting for deployment to be ready..."
+          kubectl rollout status deployment/quiz-app --timeout=120s
+          echo "Deployment completed successfully!"
+
+      - name: Verify Deployment
+        run: |
+          echo "Checking deployment status..."
+          kubectl get deployments
+          kubectl get pods
+          kubectl get services
 
       - name: Dummy DAST Scan
         run: |
-            echo "Running DAST scan against staging URL..."
-            # Example: OWASP ZAP or similar
-            sleep 5
-            echo "DAST Scan passed."
+          echo "Running DAST scan against deployed application..."
+          # In production, you would use tools like OWASP ZAP:
+          # docker run -t owasp/zap2docker-stable zap-baseline.py -t http://<service-ip>
+          sleep 5
+          echo "DAST Scan completed."

@@ -26,11 +26,26 @@ The pipeline is designed with "Shift-Left" security principles, ensuring code qu
     *   Pushes the trusted image to Docker Hub.
 
 ### CD Pipeline (`.github/workflows/cd.yml`)
-Triggered automatically after a successful CI run.
-1.  **Deployment**: Simulates deployment to a Kubernetes cluster.
-2.  **DAST**: Performs a dummy Dynamic Application Security Testing scan.
+Triggered automatically after a successful CI run. Uses a **self-hosted runner** with access to the Kubernetes cluster.
+1.  **Update Deployment Manifest**: Injects DockerHub username and image tag.
+2.  **Deploy to Kubernetes**: Applies K8s manifests using `kubectl`.
+3.  **Verify Deployment**: Checks rollout status, pods, and services.
+4.  **DAST**: Performs a dummy Dynamic Application Security Testing scan.
 
-## Setup & configuration
+### Kubernetes Manifests (`k8s/`)
+- `deployment.yaml`: Defines the Quiz App deployment with 2 replicas and health probes.
+- `service.yaml`: Exposes the app via a LoadBalancer service.
+
+## Setup & Configuration
+
+### Self-Hosted Runner Setup
+The CD pipeline requires a **self-hosted GitHub Actions runner** with `kubectl` configured to access your Kubernetes cluster.
+
+1.  **Set up a Kubernetes Cluster**: Use Minikube, Docker Desktop Kubernetes, or a cloud provider (EKS, GKE, AKS).
+2.  **Install GitHub Actions Runner**:
+    - Go to your GitHub repo → Settings → Actions → Runners → New self-hosted runner.
+    - Follow the instructions to install the runner on a machine with `kubectl` access.
+3.  **Verify `kubectl` Access**: Ensure the runner can execute `kubectl get nodes` successfully.
 
 ### Prerequisites
 - Docker installed locally.
