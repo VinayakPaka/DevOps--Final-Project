@@ -29,4 +29,9 @@ public class QuizController {
         boolean isCorrect = quizService.checkAnswer(questionId, answer);
         return isCorrect ? "Correct!" : "Incorrect!";
     }
+    @GetMapping("/hello")
+    public String hello() {
+        return "Hello, World!";
+    }
+
 }

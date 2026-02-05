@@ -1,0 +1,4 @@
+com\quizapp\QuizAppApplication.class
+com\quizapp\service\QuizService.class
+com\quizapp\model\Question.class
+com\quizapp\controller\QuizController.class
