@@ -27,6 +27,7 @@ jobs:
       - name: Deploy to Kubernetes
         shell: powershell
         run: |
+          $env:Path = "C:\Program Files\Docker\Docker\resources\bin;$env:Path"
           Write-Host "Deploying to Kubernetes cluster..."
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
@@ -37,6 +38,7 @@ jobs:
       - name: Verify Deployment
         shell: powershell
         run: |
+          $env:Path = "C:\Program Files\Docker\Docker\resources\bin;$env:Path"
           Write-Host "Checking deployment status..."
           kubectl get deployments
           kubectl get pods
